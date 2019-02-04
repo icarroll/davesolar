@@ -5,6 +5,8 @@
 #include <thread>
 #include <vector>
 
+#include <chipmunk.h>
+
 extern "C" {
 #include <SDL.h>
 #include <cairo.h>
@@ -53,28 +55,18 @@ and Sola has a radius of 4.03698 (probably safe to call it 4.0 or 4.04) with one
 those radii are of course orbital radii
 */
 
-double TIME_STEP = 0.020;
-double TIME_STEP_STEP = 0.020;
-double CURRENT_TIME = 0.0;   // time in seconds since start
+double TIME_STEP_STEP = 0.020;   // amount to change time_step by
+double time_step = 0.020;   // current time step in seconds
+double current_time = 0.0;   // time in seconds (Alles-days) since start
+
+// these phases are all in radians
+enum planet_t    {ALLES, TERRUM, HYDRUS, ZEPHYR, SOLA};
+double phase[] = {0.0,   0.0,    0.0,    0.0,    0.0};
 
 void drawstuff(cairo_t * cr) {
     // 0,0 at center of window and 4.5,4.5 at top right
     cairo_scale(cr, SCREEN_WIDTH/9.0, -SCREEN_HEIGHT/9.0);
     cairo_translate(cr, 4.5, -4.5);
-
-    /*
-    // set font
-    cairo_select_font_face(cr, "Georgia", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, 0.2);
-
-    // "Hello,"
-    cairo_text_extents_t te1;
-    cairo_text_extents(cr, "Hello,", & te1);
-
-    // "World!"
-    cairo_text_extents_t te2;
-    cairo_text_extents(cr, "World!", & te2);
-    */
 
     while (true) {
         // clear screen
@@ -97,7 +89,7 @@ void drawstuff(cairo_t * cr) {
         // Alles
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, CURRENT_TIME * (2*M_PI));
+        cairo_rotate(cr, phase[ALLES] + current_time * (2*M_PI));
         cairo_arc(cr, 1, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
@@ -106,7 +98,7 @@ void drawstuff(cairo_t * cr) {
         // Counter-Alles
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, CURRENT_TIME * (2*M_PI));
+        cairo_rotate(cr, phase[ALLES] + current_time * (2*M_PI));
         cairo_arc(cr, -1, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
@@ -115,7 +107,7 @@ void drawstuff(cairo_t * cr) {
         // Terrum
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, CURRENT_TIME/8 * (2*M_PI));
+        cairo_rotate(cr, phase[TERRUM] + current_time/8 * (2*M_PI));
         cairo_arc(cr, 2, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
@@ -124,7 +116,7 @@ void drawstuff(cairo_t * cr) {
         // Hydrus
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, CURRENT_TIME/32 * (2*M_PI));
+        cairo_rotate(cr, phase[HYDRUS] + current_time/32 * (2*M_PI));
         cairo_arc(cr, 2.8284, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
@@ -133,7 +125,7 @@ void drawstuff(cairo_t * cr) {
         // Zephyr
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, CURRENT_TIME/128 * (2*M_PI));
+        cairo_rotate(cr, phase[ZEPHYR] + current_time/128 * (2*M_PI));
         cairo_arc(cr, 3.4961, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
@@ -142,68 +134,23 @@ void drawstuff(cairo_t * cr) {
         // Sola
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, CURRENT_TIME/512 * (2*M_PI));
+        cairo_rotate(cr, phase[SOLA] + current_time/512 * (2*M_PI));
         cairo_arc(cr, 4.03698, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
         cairo_restore(cr);
-
-        /*
-        // Hello,
-        cpVect pos1 = cpBodyGetPosition(body1);
-        cpFloat rot1 = cpBodyGetAngle(body1);
-
-        cairo_save(cr);
-
-        cairo_move_to(cr, pos1.x, pos1.y);
-        cairo_scale(cr, 1, -1);
-        cairo_rotate(cr, rot1);
-        cairo_rel_move_to(cr, -te1.width/2, te1.height/2);
-        cairo_text_path(cr, "Hello,");
-        cairo_set_source_rgb(cr, 0,0,1);
-        cairo_fill_preserve(cr);
-        cairo_set_line_width(cr, 0.001);
-        cairo_set_source_rgb(cr, 0,0,0);
-        cairo_stroke(cr);
-
-        cairo_restore(cr);
-
-        // World!
-        cpVect pos2 = cpBodyGetPosition(body2);
-        cpFloat rot2 = cpBodyGetAngle(body2);
-
-        cairo_save(cr);
-
-        cairo_move_to(cr, pos2.x, pos2.y);
-        cairo_scale(cr, 1, -1);
-        cairo_rotate(cr, rot2);
-        cairo_rel_move_to(cr, -te2.width/2, te2.height/2);
-        cairo_text_path(cr, "World!");
-        cairo_set_source_rgb(cr, 0,1,0);
-        cairo_fill_preserve(cr);
-        cairo_set_line_width(cr, 0.001);
-        cairo_set_source_rgb(cr, 0,0,0);
-        cairo_stroke(cr);
-
-        cairo_restore(cr);
-        */
-
-        /*
-        for (cpVect dot : dots) {
-            cairo_new_sub_path(cr);
-            cairo_arc(cr, dot.x, dot.y, 0.01, 0, 2*M_PI);
-        }
-        cairo_set_source_rgb(cr, 1,0,0);
-        cairo_fill(cr);
-        */
 
         SDL_Event e;
         e.type = BLIT_READY;
         SDL_PushEvent(& e);
 
         this_thread::sleep_for(chrono::milliseconds(20));
-        CURRENT_TIME += TIME_STEP;
+        current_time += time_step;
     }
+}
+
+double avg(double a, double b) {
+    return (a + b) / 2.0;
 }
 
 int main(int nargs, char * args[])
@@ -233,6 +180,11 @@ int main(int nargs, char * args[])
 
     SDL_Surface * wsurf = SDL_GetWindowSurface(gWindow);
 
+    bool drag;
+    planet_t drag_planet;
+    double oldangle;
+    double startphase;
+
     bool done = false;
     while (! done)
     {
@@ -247,15 +199,44 @@ int main(int nargs, char * args[])
         else if (e.type == SDL_KEYDOWN) {
             SDL_Keycode k = e.key.keysym.sym;
             if (k == SDLK_MINUS) {
-                TIME_STEP -= TIME_STEP_STEP;
+                time_step -= TIME_STEP_STEP;
             }
             else if (k == SDLK_PLUS || k == SDLK_EQUALS) {
-                TIME_STEP += TIME_STEP_STEP;
+                time_step += TIME_STEP_STEP;
             }
             else if (k == SDLK_SPACE) {
-                CURRENT_TIME += TIME_STEP_STEP;
+                current_time += TIME_STEP_STEP;
             }
             else if (k == SDLK_q) done = true;
+        }
+        else if (e.type == SDL_MOUSEBUTTONDOWN) {
+            double x = e.button.x;
+            double y = e.button.y;
+            cairo_device_to_user(cr, & x, & y);
+
+            double len = cpvlength(cpv(x,y));
+            if (len < avg(0,1)) continue;
+            else if (len < avg(1,2)) drag_planet = ALLES;
+            else if (len < avg(2,2.8284)) drag_planet = TERRUM;
+            else if (len < avg(2.8284,3.4961)) drag_planet = HYDRUS;
+            else if (len < avg(3.4961,4.03698)) drag_planet = ZEPHYR;
+            else if (len < avg(4.03698, 4.5)) drag_planet = SOLA;
+            else continue;
+
+            oldangle = cpvtoangle(cpv(x,y));
+            startphase = phase[drag_planet];
+            drag = true;
+        }
+        else if (drag && e.type == SDL_MOUSEMOTION) {
+            double x = e.motion.x;
+            double y = e.motion.y;
+            cairo_device_to_user(cr, & x, & y);
+
+            double newangle = cpvtoangle(cpv(x,y));
+            phase[drag_planet] = startphase + newangle - oldangle;
+        }
+        else if (e.type == SDL_MOUSEBUTTONUP) {
+            drag = false;
         }
     }
 
