@@ -81,8 +81,14 @@ void drawstuff(cairo_t * cr) {
 
         // Central Fire
         cairo_new_sub_path(cr);
-        cairo_arc(cr, 0, 0, 0.1, 0, 2*M_PI);
-        cairo_set_source_rgb(cr, 1,1,1);
+        double radius = 0.1;
+        double angle = M_PI/2;
+        cairo_move_to(cr, radius*cos(angle), radius*sin(angle));
+        for (int n=0 ; n<5 ; n+=1) {
+            angle += 2*M_PI/(360.0/144.0);
+            cairo_line_to(cr, radius*cos(angle), radius*sin(angle));
+        }
+        cairo_set_source_rgb(cr, 0.5,0,1);
         cairo_fill(cr);
 
         // Alles
