@@ -55,6 +55,7 @@ those radii are of course orbital radii
 
 double TIME_STEP = 0.020;
 double TIME_STEP_STEP = 0.020;
+double CURRENT_TIME = 0.0;   // time in seconds since start
 
 void drawstuff(cairo_t * cr) {
     // 0,0 at center of window and 4.5,4.5 at top right
@@ -75,7 +76,6 @@ void drawstuff(cairo_t * cr) {
     cairo_text_extents(cr, "World!", & te2);
     */
 
-    double t = 0.0;   // time in seconds since start
     while (true) {
         // clear screen
         cairo_rectangle(cr, -4.5, -4.5, 9, 9);
@@ -97,7 +97,7 @@ void drawstuff(cairo_t * cr) {
         // Alles
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, t * (2*M_PI));
+        cairo_rotate(cr, CURRENT_TIME * (2*M_PI));
         cairo_arc(cr, 1, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
@@ -106,7 +106,7 @@ void drawstuff(cairo_t * cr) {
         // Counter-Alles
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, t * (2*M_PI));
+        cairo_rotate(cr, CURRENT_TIME * (2*M_PI));
         cairo_arc(cr, -1, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
@@ -115,7 +115,7 @@ void drawstuff(cairo_t * cr) {
         // Terrum
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, t/8 * (2*M_PI));
+        cairo_rotate(cr, CURRENT_TIME/8 * (2*M_PI));
         cairo_arc(cr, 2, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
@@ -124,7 +124,7 @@ void drawstuff(cairo_t * cr) {
         // Hydrus
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, t/32 * (2*M_PI));
+        cairo_rotate(cr, CURRENT_TIME/32 * (2*M_PI));
         cairo_arc(cr, 2.8284, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
@@ -133,7 +133,7 @@ void drawstuff(cairo_t * cr) {
         // Zephyr
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, t/128 * (2*M_PI));
+        cairo_rotate(cr, CURRENT_TIME/128 * (2*M_PI));
         cairo_arc(cr, 3.4961, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
@@ -142,7 +142,7 @@ void drawstuff(cairo_t * cr) {
         // Sola
         cairo_new_sub_path(cr);
         cairo_save(cr);
-        cairo_rotate(cr, t/512 * (2*M_PI));
+        cairo_rotate(cr, CURRENT_TIME/512 * (2*M_PI));
         cairo_arc(cr, 4.03698, 0, 0.01, 0, 2*M_PI);
         cairo_set_source_rgb(cr, 1,1,1);
         cairo_fill(cr);
@@ -202,7 +202,7 @@ void drawstuff(cairo_t * cr) {
         SDL_PushEvent(& e);
 
         this_thread::sleep_for(chrono::milliseconds(20));
-        t += TIME_STEP;
+        CURRENT_TIME += TIME_STEP;
     }
 }
 
@@ -251,6 +251,9 @@ int main(int nargs, char * args[])
             }
             else if (k == SDLK_PLUS || k == SDLK_EQUALS) {
                 TIME_STEP += TIME_STEP_STEP;
+            }
+            else if (k == SDLK_SPACE) {
+                CURRENT_TIME += TIME_STEP_STEP;
             }
             else if (k == SDLK_q) done = true;
         }
