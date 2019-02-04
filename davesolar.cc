@@ -53,6 +53,9 @@ and Sola has a radius of 4.03698 (probably safe to call it 4.0 or 4.04) with one
 those radii are of course orbital radii
 */
 
+double TIME_STEP = 0.020;
+double TIME_STEP_STEP = 0.020;
+
 void drawstuff(cairo_t * cr) {
     // 0,0 at center of window and 4.5,4.5 at top right
     cairo_scale(cr, SCREEN_WIDTH/9.0, -SCREEN_HEIGHT/9.0);
@@ -199,7 +202,7 @@ void drawstuff(cairo_t * cr) {
         SDL_PushEvent(& e);
 
         this_thread::sleep_for(chrono::milliseconds(20));
-        t += 0.020;
+        t += TIME_STEP;
     }
 }
 
@@ -240,6 +243,16 @@ int main(int nargs, char * args[])
         else if (e.type == BLIT_READY) {
             SDL_BlitSurface(sdlsurf, NULL, wsurf, NULL);
             SDL_UpdateWindowSurface(gWindow);
+        }
+        else if (e.type == SDL_KEYDOWN) {
+            SDL_Keycode k = e.key.keysym.sym;
+            if (k == SDLK_MINUS) {
+                TIME_STEP -= TIME_STEP_STEP;
+            }
+            else if (k == SDLK_PLUS || k == SDLK_EQUALS) {
+                TIME_STEP += TIME_STEP_STEP;
+            }
+            else if (k == SDLK_q) done = true;
         }
     }
 
